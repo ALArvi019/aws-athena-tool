@@ -58,11 +58,14 @@ class AWSAuthenticator:
                     self.logger.log(f"Error authenticating with MFA: {e}", "red")
                     continue
 
-    def select_region(self, selected_profile):
+    def select_region(self, selected_profile, from_args=False):
         while True:
             self.logger.log(f"Actual region: {self.region}", "cyan")
-            select_region = input("Do you want to change the region? (y/N): ")
-
+            if not from_args:
+                select_region = input("Do you want to change the region? (y/N): ")
+            else:
+                select_region = "n"
+                
             if select_region == "y":
                 # check if region is valid
                 region = input("Enter the region: ")
