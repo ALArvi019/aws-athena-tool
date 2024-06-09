@@ -10,9 +10,6 @@ The AWS Athena Tool is an application that allows you to run queries in Athena t
 2. Ensure your AWS CLI is configured with the necessary AWS profiles. You can configure profiles using the command:
 `aws configure --profile profile-name`
 
-3. Run the `RUN.sh` script:
-`./RUN.sh`
-
 ## File Structure
 -  `main.py`: Main file to run the application.
 -  `aws_auth.py`: Contains the `AWSAuthenticator` class for authentication.
@@ -25,7 +22,14 @@ The AWS Athena Tool is an application that allows you to run queries in Athena t
 
 ## Usage
 To run the application, simply execute the `RUN.sh` script:
-`./RUN.sh`
+
+### Wizard
+Run the application with the `wizard` argument to use the interactive wizard:
+`./RUN.sh` wizard
+
+### Arguments
+Run the application with specific arguments:
+`./RUN.sh` arguments --profile NAME --region eu-west-1 --log_type elbv2 --selected_resource arn:aws:elasticloadbalancing:eu-west-1:123456789000:loadbalancer/app/NAME/1234567890
 
 ### User Interface
 1. Select the AWS profile to authenticate.
