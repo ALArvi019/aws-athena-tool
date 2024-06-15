@@ -25,6 +25,9 @@ class LogChecker:
                     if attr['Key'] == 'access_logs.s3.enabled' and attr['Value'] == 'true':
                         for attr in attributes['Attributes']:
                             if attr['Key'] == 'access_logs.s3.bucket':
+                                for attr_prefix in attributes['Attributes']:
+                                    if attr_prefix['Key'] == 'access_logs.s3.prefix':
+                                        self.log_prefix = attr_prefix['Value']
                                 log_bucket_name = attr['Value']
                         log_enabled_elbs[lb_name] = log_bucket_name
                 pbar.update(1)
@@ -67,6 +70,9 @@ class LogChecker:
                 if attr['Key'] == 'access_logs.s3.enabled' and attr['Value'] == 'true':
                     for attr in attributes['Attributes']:
                         if attr['Key'] == 'access_logs.s3.bucket':
+                            for attr_prefix in attributes['Attributes']:
+                                if attr_prefix['Key'] == 'access_logs.s3.prefix':
+                                    self.log_prefix = attr_prefix['Value']
                             log_bucket_name = attr['Value']
                     return log_bucket_name
             return False
@@ -88,6 +94,8 @@ class LogChecker:
 
             if self.check_is_valid_date(year, month, day):
                 s3_path = f"AWSLogs/{account_id}/elasticloadbalancing/{region}/{year}/{month}/{day}"
+                if self.log_prefix != '':
+                    s3_path = f"{self.log_prefix}/{s3_path}"
                 if self.check_s3_path_exists(bucket_name, s3_path):
                     self.log_prefix = s3_path
                     break
