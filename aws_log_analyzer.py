@@ -28,10 +28,11 @@ class AWSLogAnalyzer:
                 "2": f"SELECT * FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" LIMIT 20",
                 "3": f"SELECT count(client_ip) AS retries, client_ip FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" WHERE target_status_code LIKE '4%' GROUP BY client_ip ORDER BY retries DESC;",
                 "4": f"SELECT count(client_ip) AS retries, client_ip FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" GROUP BY client_ip ORDER BY retries DESC;",
-                "5": f"SELECT count(client_ip) AS retries, client_ip FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" WHERE request_url LIKE '%@@@endpoint@@@%' GROUP BY client_ip ORDER BY retries DESC;",
+                "5": f"SELECT count(client_ip) AS retries, client_ip, request_url FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" WHERE request_url LIKE '%@@@endpoint@@@%' GROUP BY client_ip, request_url ORDER BY retries DESC;",
                 "6": f"SELECT count(request_url) AS retries, request_url FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" WHERE target_status_code LIKE '4%' GROUP BY request_url ORDER BY retries DESC;",
                 "7": f"SELECT count(request_url) AS retries, client_ip, request_url FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" WHERE target_status_code LIKE '4%' GROUP BY request_url, client_ip ORDER BY retries DESC;",
                 "8": f"SELECT count(request_url) AS retries, request_url FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" WHERE target_status_code LIKE '4%' AND time BETWEEN parse_datetime('@@@start_time@@@','yyyy-MM-dd-HH:mm:ss') AND parse_datetime('@@@end_time@@@','yyyy-MM-dd-HH:mm:ss') GROUP BY request_url ORDER BY retries DESC;",
+                "9": f"SELECT count(request_url) AS retries, request_url FROM \"@@@athena_database@@@\".\"@@@athena_table@@@\" WHERE time LIKE '@@@start_time@@@%' or time LIKE '@@@end_time@@@%' GROUP BY request_url ORDER BY retries DESC;",
             },
             "cloudfront": {
                 "0": f"DONT CHANGE THIS",
@@ -46,13 +47,21 @@ class AWSLogAnalyzer:
         }
 
     def replace_placeholders(self, query):
+        # Verifica que query sea una cadena
+        if not isinstance(query, str):
+            raise ValueError("The query must be a string.")
+        
+        # Encuentra todos los placeholders en la consulta
         placeholders = re.findall(r'@@@(\w+)@@@', query)
         for placeholder in placeholders:
             attribute_name = placeholder
-            if hasattr(self, attribute_name):
+            # Comprueba si la instancia tiene el atributo
+            if hasattr(self, attribute_name) and getattr(self, attribute_name) is not None:
                 value = getattr(self, attribute_name)
             else:
+                # Si no tiene el atributo, solicita al usuario que ingrese el valor
                 value = input(f"Enter value for {attribute_name}: ")
+            # Reemplaza el placeholder en la consulta con el valor correspondiente
             query = query.replace(f"@@@{attribute_name}@@@", value)
         return query
 
